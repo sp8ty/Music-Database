@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block main %}
+    <div class="mainContainer">
+        <div class="searchContent">
+            {% for row in data %}
+            <a>               
+                <form action="/{{ row["type"] }}" method="post">
+                    <button class="blockButton" type="submit">
+                        <div class="searchItem">
+                            <div class="form-group hiddenForm">
+                                <input class="form-control" name="type" type="text" value="{{ row["type"] }}">
+                                <input class="form-control" name="id" type="text" value="{{ row["id"] }}">
+                                <input class="form-control" name="thumb" type="text" value="{{ row["thumb"] }}">
+                            </div>
+                            {% if row["thumb"] == '' %}
+                                <div class="thumb">
+                                    <img src="static/icons/noImage.png"/>
+                                </div>
+                            {% else %}
+                                <div class="thumb">
+                                    <img src="{{ row["thumb"] }}"/>
+                                </div>
+                            {% endif %}
+                            <div class="type">
+                                <p>{{ row["title"] }}</p>
+                            </div>
+                            <div class="type">
+                                <p>{{ row["type"] }}</p>
+                            </div>
+                        </div>
+                    </button>
+                </form>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

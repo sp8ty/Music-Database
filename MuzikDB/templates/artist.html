@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+
+{% block main %}
+<div class="mainContainer">
+    <div class="artistContent">
+        <div class="detailContainer">
+            <div class="thumb">
+                <img src="{{ artistThumb }}" />
+            </div>
+            <div class="details">
+                <h1>{{ artist["name"] }}</h1>
+                <div class="detailAlign">
+                    <p>Real Name:&nbsp&nbsp&nbsp</p><p>{{ artist["realname"] }}</p>
+                </div>
+                <div class="detailAlign sites">
+                    <p>Sites:&nbsp&nbsp&nbsp</p>
+                    {% set sites = artist["urls"] %}
+                    {%for row in sites%}
+                    <a href="{{ row }}">{{ row }},&nbsp</a>
+                    {% endfor %}
+                </div>
+                <div class="detailAlign aliases">
+                    <p>Aliases:&nbsp&nbsp&nbsp</p>
+                    {% set aliases = artist["aliases" ]%}
+                    {% for row in aliases %}
+                    <p>{{ row["name"] }},&nbsp</p>
+                    {% endfor %}
+                </div>
+                <div class="detailAlign variations">
+                    <p>Variations:&nbsp&nbsp&nbsp</p>
+                    {% set namevar = artist["namevariations" ]%}
+                    {% for row in namevar %}
+                    <p>{{ row }},&nbsp</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="profile">
+            <p>Profile: </p>
+            <p>{{ artist["profile"] }}</p>
+        </div>
+        <div class="releases">
+            <table>
+                <thead class="thead">
+                    <th>Master Releases</th>
+                </thead>
+                <tbody class="tbody">
+                {% for row in data %}
+                    {% if row["type"] == 'master' %}
+                    <tr>
+                        <td><img src="{{ row["thumb"] }}" height="100px" width="100px"/></td>
+                        <td>{{ row["title"] }}</td>
+                        <td>{{ row["year"] }}</td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+            <div class="pagination">
+                <a href="#">...PREV&nbsp&nbsp&nbsp</a>|<a href="#">&nbsp&nbsp&nbspNEXT...</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
