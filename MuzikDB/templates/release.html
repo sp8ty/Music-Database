@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+
+{% block main %}
+    <div class="mainContainer">
+        <div class="mainContent">
+            <div class="detailContainer">
+                <!--display the thumbnail-->
+                <div class="thumb">
+                    <img src="{{ thumb }}" alt="Release Image" />
+                </div>
+                <!--display the release information-->
+                <div class="details">
+                    <!--Title of release-->
+                    <h1>{{ release["title"] }}</h1>
+                    <p class="releaseArtists">
+                        <!--loop through the artists names-->
+                        Artists:&nbsp&nbsp
+                        {% set releaseArtists = release["artists"] %}
+                        {% for row in releaseArtists %}
+                            {{ row["name"] }},&nbsp
+                        {% endfor %}
+                    </p>
+                    <p class="releaseLabels">
+                        <!--loop through the labels names-->
+                        Labels:&nbsp&nbsp
+                        {% set labels = release["labels"] %}
+                        {% for row in labels %}
+                            {{ row["name"] }},&nbsp
+                        {% endfor %}
+                    </p>
+                    <p class="formats">
+                        <!--loop through the format types-->
+                        Formats:&nbsp&nbsp
+                        {% set formats = release["formats"] %}
+                        {% for row in formats %}
+                            {{ row["name"] }},&nbsp(
+                            {% set descriptions = row["descriptions"] %}
+                            {% for row in descriptions %}
+                                {{ row }},
+                            {% endfor %}
+                            )
+                        {% endfor %}
+                    </p>
+                </div>
+            </div>
+            <div class="releaseContainer">
+                <div class="trackTable">
+                    <div class="trackContainer">
+                        <h2>Tracklist</h2>
+                        <table class="tracklist">
+                            {% set tracklist = release["tracklist"] %}
+                            {% for row in tracklist %}
+                            {% if row["type"] == 'heading' %}
+                            <thead class="tracklistHead">
+                            <th>{{ row["title"] }}</th>
+                            </thead>
+                            {% else %}
+                            <tr>
+                                <td>{{ row["position"] }}</td>
+                                <td>{{ row["title"] }}</td>
+                                <td>{{ row["duration"] }}</td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+                <div class="videoContainer">
+                    <h2>Videos</h2>
+                    <div class="videoList">
+                        {% set videos = release["videos"] %}
+                        {% set embed = 'https://www.youtube.com/embed/' %}
+                        {% for row in videos %}
+                            {% set link = row["uri"] %}
+                            {% set videoId =  get_yt_video_id(link) %}
+                            <div class="videos">
+                                <iframe width="370px" height="240px" src="{{ embed }}{{ videoId }}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

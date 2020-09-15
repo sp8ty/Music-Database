@@ -1,15 +1,16 @@
-"""
-This script runs the application using a development server.
-It contains the definition of routes and views for the application.
-"""
 
 import requests
 import urllib.request
-from urllib.parse import urljoin
+
+from urllib.parse import urlparse, parse_qs
 from flask import Flask, flash, jsonify, redirect, render_template, request, session
+from helpers import get_yt_video_id
 
 # Configure application
 app = Flask(__name__)
+
+#custom functions
+app.jinja_env.globals.update(get_yt_video_id=get_yt_video_id)
 
 # Make the WSGI interface available at the top level so wfastcgi can get it.
 wsgi_app = app.wsgi_app
@@ -31,21 +32,44 @@ def search():
         # initialise the variable with the users input
         search = request.form.get("search")
 
+
+        # set variable if user is selecting pagination
+        goto = request.form.get("goto")
+
         # Authorization header to be embedded into the url
         headers = {
             'Authorization': 'Discogs token=mqjXUBBzjnqrjUkKFIrOPAmlEZsGoDXjkRZgnRIR'
         }
 
-        # search the databse
-        response = requests.get("https://api.discogs.com/database/search?q=%s&{?type=all}" % search, headers=headers)
+        if goto == None:
+            # search the databse
+            response = requests.get("https://api.discogs.com/database/search?q=%s&{?type=all}" % search, headers=headers)
 
-        # return query into a JSON list variable
-        query = response.json()
+            # return query into a JSON list variable
+            query = response.json()
 
-        # filtering out useful data
-        data = query["results"]
+            # retreiving useful data
+            data = query["results"]
+            pagination = query["pagination"]
+            pages = pagination["pages"]
+            page = pagination["page"]
 
-        return render_template("search.html", data=data)
+            return render_template("search.html", data=data, pagination=pagination, pages=pages, page=page)
+
+        else:
+            # search the databse
+            response = requests.get("%s" % goto, headers=headers)
+
+            # return query into a JSON list variable
+            query = response.json()
+
+            # retreiving useful data
+            data = query["results"]
+            pagination = query["pagination"]
+            pages = pagination["pages"]
+            page = pagination["page"]
+
+            return render_template("search.html", data=data, pagination=pagination, pages=pages, page=page)
 
 @app.route('/artist', methods=["GET", "POST"])
 def artist():
@@ -57,7 +81,7 @@ def artist():
     else:
         # initialise the variables from the hidden html form input
         type = request.form.get("type")
-        id = request.form.get("id")
+        url = request.form.get("url")
         thumb = request.form.get("thumb")
 
         # Authorization header to be embedded into the url 
@@ -66,23 +90,168 @@ def artist():
         }
 
         # search the database for artist information
-        artists = requests.get("https://api.discogs.com/artists/%s" % id, headers=headers)
-
+        artists = requests.get("%s" % url, headers=headers)
         artist = artists.json()
-        #sites = artist["urls"]
-        #namevar = artist["namevariations"]
 
-        # search the database for artists releases
-        releases = requests.get("https://api.discogs.com/artists/%s/releases?per_page=100" % id, headers=headers)
+        # set variable if user is selecting pagination
+        goto = request.form.get("goto")
 
-        release = releases.json()
-        data = release["releases"]
-        pagination = release["pagination"]
-        pages = pagination["pages"]
-        page = pagination["page"]
+        if goto == None:
+
+            # search the database for artists releases
+            releases = requests.get("%s/releases?per_page=50" % url, headers=headers)
+            release = releases.json()
+
+            # retreiving useful data
+            data = release["releases"]
+            pagination = release["pagination"]
+            pages = pagination["pages"]
+            page = pagination["page"]
         
 
-        return render_template("/artist.html",artist=artist, data=data, artistThumb=thumb,)
+            return render_template("/artist.html",artist=artist, data=data, artistThumb=thumb, page=page, pages=pages, pagination=pagination, type=type, url=url, thumb=thumb)
+
+        else:
+
+            # search the database for artists releases goto page
+            releases = requests.get("%s" % goto, headers=headers)
+            release = releases.json()
+
+            # retreiving useful data
+            data = release["releases"]
+            pagination = release["pagination"]
+            pages = pagination["pages"]
+            page = pagination["page"]
+        
+
+            return render_template("/artist.html",artist=artist, data=data, artistThumb=thumb, page=page, pages=pages, pagination=pagination, type=type, url=url, thumb=thumb)
+
+@app.route("/release", methods=["GET", "POST"])
+def release():
+    '''Display release results'''
+
+    if request.method == "GET":
+        return render_template("/release.html")
+
+    else:
+        # initialise the variables from the hidden html form input
+        type = request.form.get("type")
+        url = request.form.get("url")
+        thumb = request.form.get("thumb")
+
+        # Authorization header to be embedded into the url 
+        headers = {
+        'Authorization': 'Discogs token=mqjXUBBzjnqrjUkKFIrOPAmlEZsGoDXjkRZgnRIR'
+        }
+
+        # search the database for release information
+        releases = requests.get("%s" % url, headers=headers)
+        release = releases.json()
+
+        #initailising list of youtube videos and filtering out just the urls and removing all but the video id then adding them to a list
+        #videos = release["videos"]
+
+        #videoIds = []
+        #for row in videos:
+            #link = row["uri"]
+            #videoId = get_yt_video_id(link)
+            #videoIds.append(videoId)
+
+        #embed = "https://www.youtube.com/embed/"
+
+        
+        return render_template("/release.html", get_yt_video_id=get_yt_video_id, release=release, thumb=thumb)
+
+
+@app.route("/master", methods=["GET", "POST"])
+def master():
+    '''Display release results'''
+
+    if request.method == "GET":
+        return render_template("/release.html")
+
+    else:
+        # initialise the variables from the hidden html form input
+        type = request.form.get("type")
+        url = request.form.get("url")
+        thumb = request.form.get("thumb")
+
+        # Authorization header to be embedded into the url 
+        headers = {
+        'Authorization': 'Discogs token=mqjXUBBzjnqrjUkKFIrOPAmlEZsGoDXjkRZgnRIR'
+        }
+
+        # search the database for release information
+        releases = requests.get("%s" % url, headers=headers)
+        release = releases.json()
+
+        #initailising list of youtube videos and filtering out just the urls and removing all but the video id then adding them to a list
+        #videos = release["videos"]
+        #videoIds = []
+        #for row in videos:
+            #link = row["uri"]
+            #videoId = get_yt_video_id(link)
+            #videoIds.append(videoId)
+
+        #embed = "https://www.youtube.com/embed/"
+
+        
+        return render_template("/release.html", get_yt_video_id=get_yt_video_id, release=release, thumb=thumb)
+
+@app.route('/label', methods=["GET", "POST"])
+def label():
+    """Renders an label page."""
+
+    if request.method == "GET":
+        return render_template("/label.html")
+
+    else:
+        # initialise the variables from the hidden html form input
+        type = request.form.get("type")
+        url = request.form.get("url")
+        thumb = request.form.get("thumb")
+
+        # Authorization header to be embedded into the url 
+        headers = {
+        'Authorization': 'Discogs token=mqjXUBBzjnqrjUkKFIrOPAmlEZsGoDXjkRZgnRIR'
+        }
+
+        # search the database for label information
+        labels = requests.get("%s" % url, headers=headers)
+        label = labels.json()
+
+        # set variable if user is selecting pagination
+        goto = request.form.get("goto")
+
+        if goto == None:
+
+            # search the database for labels releases
+            releases = requests.get("%s/releases?per_page=50" % url, headers=headers)
+            release = releases.json()
+
+            # retreiving useful data
+            data = release["releases"]
+            pagination = release["pagination"]
+            pages = pagination["pages"]
+            page = pagination["page"]
+        
+
+            return render_template("/label.html", label=label, data=data, labelThumb=thumb, page=page, pages=pages, pagination=pagination, type=type, url=url, thumb=thumb)
+
+        else:
+
+            # search the database for artists releases goto page
+            releases = requests.get("%s" % goto, headers=headers)
+            release = releases.json()
+
+            # retreiving useful data
+            data = release["releases"]
+            pagination = release["pagination"]
+            pages = pagination["pages"]
+            page = pagination["page"]
+        
+
+            return render_template("/label.html", label=label, data=data, labelThumb=thumb, page=page, pages=pages, pagination=pagination, type=type, url=url, thumb=thumb)
 
 
 

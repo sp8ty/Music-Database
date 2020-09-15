@@ -1,38 +1,63 @@
 {% extends "layout.html" %}
 
 {% block main %}
-    <div class="mainContainer">
-        <div class="searchContainer">
-            <div class="searchContent">
-                {% for row in data %}
-                <form action="/{{ row["type"] }}" method="post">
-                    <button class="blockButton" type="submit">
-                        <div class="searchItem">
-                            <div class="form-group hiddenForm">
-                                <input class="form-control" name="type" type="text" value="{{ row["type"] }}">
-                                <input class="form-control" name="url" type="text" value="{{ row["resource_url"] }}">
-                                <input class="form-control" name="thumb" type="text" value="{{ row["thumb"] }}">
-                            </div>
-                            {% if row["thumb"] == '' %}
-                            <div class="thumb">
-                                <img src="static/icons/noImage.png" />
-                            </div>
-                            {% else %}
-                            <div class="thumb">
-                                <img src="{{ row["thumb"] }}" />
-                            </div>
-                            {% endif %}
-                            <div class="type">
-                                <p>{{ row["type"] }}</p>
-                            </div>
-                            <div class="type">
-                                <p>{{ row["title"] }}</p>
-                            </div>
-                        </div>
-                    </button>
-                </form>
-                {% endfor %}
+<div class="mainContainer">
+    <div class="mainContent">
+        <div class="infoContainer">
+            <div class="detailContainer">
+                <div class="thumb">
+                    <img src="{{ labelThumb }}" />
+                </div>
+                <div class="details">
+                    <h1>{{ label["name"] }}</h1>
+                </div>
             </div>
+            <div class="profile">
+                <p>Profile: </p>
+                <p>{{ label["profile"] }}</p>
+            </div>
+        </div>
+        <div class="releases">
+            <table>
+                <thead class="thead">
+                <th>Master Releases</th>
+                </thead>
+                <tbody class="tbody">
+                    {% for row in data %}
+                    <tr>
+                        {% if row["thumb"] == '' %}
+                        <td><img src="static/icons/noImage.png" height="100px" width="100px" /></td>
+                        {% else %}
+                        <td>
+                            <form action="/master" method="post">
+                                <button class="blockButton" type="submit">
+                                    <div class="form-group hiddenForm">
+                                        <input class="form-control" name="type" type="text" value="{{ type }}">
+                                        <input class="form-control" name="url" type="text" value="{{ row["resource_url"] }}">
+                                        <input class="form-control" name="thumb" type="text" value="{{ row["thumb"] }}">
+                                    </div>
+                                    <img src="{{ row["thumb"] }}" height="100px" width="100px" />
+                                </button>
+                            </form>
+                        </td>
+                        {% endif %}
+                        <td>
+                            <form action="/master" method="post">
+                                <button class="blockButton" type="submit">
+                                    <div class="form-group hiddenForm">
+                                        <input class="form-control" name="type" type="text" value="{{ type }}">
+                                        <input class="form-control" name="url" type="text" value="{{ row["resource_url"] }}">
+                                        <input class="form-control" name="thumb" type="text" value="{{ row["thumb"] }}">
+                                    </div>
+                                    {{ row["title"] }}
+                                </button>
+                            </form>
+                        </td>
+                        <td>{{ row["year"] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
             <div class="pagination">
                 {% set urls = pagination["urls"] %}
                 {% set first = urls["first"]  %}
@@ -40,7 +65,7 @@
                 {% set prev = urls["prev"]  %}
                 {% set next = urls["next"]  %}
                 {% if  page  > 1 %}
-                <form action="/search" method="post">
+                <form action="/label" method="post">
                     <button class="blockButton" type="submit">
                         <div class="form-group hiddenForm">
                             <input class="form-control" name="goto" type="text" value="{{ first }}">
@@ -51,7 +76,7 @@
                         <p class="link">...FIRST&nbsp&nbsp&nbsp</p>
                     </button>
                 </form>
-                <form action="/search" method="post">
+                <form action="/label" method="post">
                     <button class="blockButton" type="submit">
                         <div class="form-group hiddenForm">
                             <input class="form-control" name="goto" type="text" value="{{ prev }}">
@@ -65,7 +90,7 @@
                 {% endif %}
                 |
                 {% if  page  <  pages  %}
-                <form action="/search" method="post">
+                <form action="/label" method="post">
                     <button class="blockButton" type="submit">
                         <div class="form-group hiddenForm">
                             <input class="form-control" name="goto" type="text" value="{{ next }}">
@@ -76,7 +101,7 @@
                         <p class="link">&nbsp&nbsp&nbspNEXT...</p>
                     </button>
                 </form>
-                <form action="/search" method="post">
+                <form action="/label" method="post">
                     <button class="blockButton" type="submit">
                         <div class="form-group hiddenForm">
                             <input class="form-control" name="goto" type="text" value="{{ last }}">
@@ -91,4 +116,5 @@
             </div>
         </div>
     </div>
+</div>
 {% endblock %}

@@ -2,42 +2,44 @@
 
 {% block main %}
 <div class="mainContainer">
-    <div class="artistContent">
-        <div class="detailContainer">
-            <div class="thumb">
-                <img src="{{ artistThumb }}" />
+    <div class="mainContent">
+        <div class="infoContainer">
+            <div class="detailContainer">
+                <div class="thumb">
+                    <img src="{{ artistThumb }}" />
+                </div>
+                <div class="details">
+                    <h1>{{ artist["name"] }}</h1>
+                    <div class="detailAlign">
+                        <p>Real Name:&nbsp&nbsp&nbsp</p><p>{{ artist["realname"] }}</p>
+                    </div>
+                    <div class="detailAlign sites">
+                        <p>Sites:&nbsp&nbsp&nbsp</p>
+                        {% set sites = artist["urls"] %}
+                        {%for row in sites%}
+                        <a href="{{ row }}">{{ row }},&nbsp</a>
+                        {% endfor %}
+                    </div>
+                    <div class="detailAlign aliases">
+                        <p>Aliases:&nbsp&nbsp&nbsp</p>
+                        {% set aliases = artist["aliases" ]%}
+                        {% for row in aliases %}
+                        <p>{{ row["name"] }},&nbsp</p>
+                        {% endfor %}
+                    </div>
+                    <div class="detailAlign variations">
+                        <p>Variations:&nbsp&nbsp&nbsp</p>
+                        {% set namevar = artist["namevariations" ]%}
+                        {% for row in namevar %}
+                        <p>{{ row }},&nbsp</p>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
-            <div class="details">
-                <h1>{{ artist["name"] }}</h1>
-                <div class="detailAlign">
-                    <p>Real Name:&nbsp&nbsp&nbsp</p><p>{{ artist["realname"] }}</p>
-                </div>
-                <div class="detailAlign sites">
-                    <p>Sites:&nbsp&nbsp&nbsp</p>
-                    {% set sites = artist["urls"] %}
-                    {%for row in sites%}
-                    <a href="{{ row }}">{{ row }},&nbsp</a>
-                    {% endfor %}
-                </div>
-                <div class="detailAlign aliases">
-                    <p>Aliases:&nbsp&nbsp&nbsp</p>
-                    {% set aliases = artist["aliases" ]%}
-                    {% for row in aliases %}
-                    <p>{{ row["name"] }},&nbsp</p>
-                    {% endfor %}
-                </div>
-                <div class="detailAlign variations">
-                    <p>Variations:&nbsp&nbsp&nbsp</p>
-                    {% set namevar = artist["namevariations" ]%}
-                    {% for row in namevar %}
-                    <p>{{ row }},&nbsp</p>
-                    {% endfor %}
-                </div>
+            <div class="profile">
+                <p>Profile: </p>
+                <p>{{ artist["profile"] }}</p>
             </div>
-        </div>
-        <div class="profile">
-            <p>Profile: </p>
-            <p>{{ artist["profile"] }}</p>
         </div>
         <div class="releases">
             <table>
@@ -48,8 +50,34 @@
                 {% for row in data %}
                     {% if row["type"] == 'master' %}
                     <tr>
-                        <td><img src="{{ row["thumb"] }}" height="100px" width="100px"/></td>
-                        <td>{{ row["title"] }}</td>
+                    {% if row["thumb"] == '' %}
+                        <td><img src="static/icons/noImage.png" height="100px" width="100px" /></td>
+                    {% else %}
+                        <td>
+                            <form action="/master" method="post">
+                                <button class="blockButton link" type="submit">
+                                    <div class="form-group hiddenForm">
+                                        <input class="form-control" name="type" type="text" value="{{ type }}">
+                                        <input class="form-control" name="url" type="text" value="{{ row["resource_url"] }}">
+                                        <input class="form-control" name="thumb" type="text" value="{{ row["thumb"] }}">
+                                    </div>
+                                    <img src="{{ row["thumb"] }}" height="100px" width="100px" />
+                                </button>
+                            </form>
+                        </td>
+                    {% endif %}
+                        <td>
+                            <form action="/master" method="post">
+                                <button class="blockButton link" type="submit">
+                                    <div class="form-group hiddenForm">
+                                        <input class="form-control" name="type" type="text" value="{{ type }}">
+                                        <input class="form-control" name="url" type="text" value="{{ row["resource_url"] }}">
+                                        <input class="form-control" name="thumb" type="text" value="{{ row["thumb"] }}">
+                                    </div>
+                                    {{ row["title"] }}
+                                </button>
+                            </form>
+                        </td>
                         <td>{{ row["year"] }}</td>
                     </tr>
                     {% endif %}
@@ -57,7 +85,60 @@
                 </tbody>
             </table>
             <div class="pagination">
-                <a href="#">...PREV&nbsp&nbsp&nbsp</a>|<a href="#">&nbsp&nbsp&nbspNEXT...</a>
+                {% set urls = pagination["urls"] %}
+                {% set first = urls["first"]  %}
+                {% set last = urls["last"]  %}
+                {% set prev = urls["prev"]  %}
+                {% set next = urls["next"]  %}
+                {% if  page  > 1 %}
+                    <form action="/artist" method="post">
+                        <button class="blockButton" type="submit">
+                            <div class="form-group hiddenForm">
+                                <input class="form-control" name="goto" type="text" value="{{ first }}">
+                                <input class="form-control" name="type" type="text" value="{{ type }}">
+                                <input class="form-control" name="url" type="text" value="{{ url }}">
+                                <input class="form-control" name="thumb" type="text" value="{{ thumb }}">
+                            </div>
+                            <p class="link">...FIRST&nbsp&nbsp&nbsp</p>
+                        </button>
+                    </form>
+                    <form action="/artist" method="post">
+                        <button class="blockButton" type="submit">
+                            <div class="form-group hiddenForm">
+                                <input class="form-control" name="goto" type="text" value="{{ prev }}">
+                                <input class="form-control" name="type" type="text" value="{{ type }}">
+                                <input class="form-control" name="url" type="text" value="{{ url }}">
+                                <input class="form-control" name="thumb" type="text" value="{{ thumb }}">
+                            </div>
+                            <p class="link">...PREV&nbsp&nbsp&nbsp</p>
+                        </button>
+                    </form>
+                {% endif %}
+                |
+                {% if  page  <  pages  %}
+                    <form action="/artist" method="post">
+                        <button class="blockButton" type="submit">
+                            <div class="form-group hiddenForm">
+                                <input class="form-control" name="goto" type="text" value="{{ next }}">
+                                <input class="form-control" name="type" type="text" value="{{ type }}">
+                                <input class="form-control" name="url" type="text" value="{{ url }}">
+                                <input class="form-control" name="thumb" type="text" value="{{ thumb }}">
+                            </div>
+                            <p class="link">&nbsp&nbsp&nbspNEXT...</p>
+                        </button>
+                    </form>
+                    <form action="/artist" method="post">
+                        <button class="blockButton" type="submit">
+                            <div class="form-group hiddenForm">
+                                <input class="form-control" name="goto" type="text" value="{{ last }}">
+                                <input class="form-control" name="type" type="text" value="{{ type }}">
+                                <input class="form-control" name="url" type="text" value="{{ url }}">
+                                <input class="form-control" name="thumb" type="text" value="{{ thumb }}">
+                            </div>
+                            <p class="link">&nbsp&nbsp&nbspLAST...</p>
+                        </button>
+                    </form>
+                {% endif %}
             </div>
         </div>
     </div>
